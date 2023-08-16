@@ -2,7 +2,7 @@
 //  LocationSearchView.swift
 //  mUber
 //
-//  Created by Shium Ishrak on 8/16/23.
+//  Created by Mahin Chowdhury on 8/16/23.
 //
 
 import SwiftUI
@@ -10,7 +10,8 @@ import SwiftUI
 struct LocationSearchView: View {
     
     @State private var startLocationText = ""
-    @State private var destinationLocationText = ""
+    @EnvironmentObject var viewModel: LocationSearchViewModel
+    @Binding var showLocationSearchView : Bool
     
     var body: some View {
         VStack{
@@ -36,7 +37,7 @@ struct LocationSearchView: View {
                         .background(Color(.systemGroupedBackground))
                         .padding(.trailing)
                     
-                    TextField("Where to?",text : $destinationLocationText)
+                    TextField("Where to?",text : $viewModel.queryfragment)
                         .frame(height : 32)
                         .background(Color(.systemGray4))
                         .padding(.trailing)
@@ -52,8 +53,12 @@ struct LocationSearchView: View {
             
             ScrollView(){
                 VStack(alignment:.leading){
-                    ForEach(0 ..< 20 , id: \.self){ _ in
-                        LocationSearchResultCell()
+                    ForEach(viewModel.results , id: \.self){ result in
+                        LocationSearchResultCell(title: result.title, subtitle: result.subtitle)
+                            .onTapGesture {
+                                viewModel.selectedLocation(result.title)
+                                showLocationSearchView.toggle()
+                            }
                     }
                 }
             }
@@ -64,6 +69,7 @@ struct LocationSearchView: View {
 
 struct LocationSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        LocationSearchView()
+        LocationSearchView(showLocationSearchView: .constant(false))
+            .environmentObject(LocationSearchViewModel())
     }
 }
