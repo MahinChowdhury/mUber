@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct RideRequestView: View {
+    @State private var selectedRideType : RideType = .uberX
+    @EnvironmentObject var locationViewModel : LocationSearchViewModel
+    
     var body: some View {
+                
         VStack{
             Capsule()
                 .foregroundColor(Color(.systemGray5))
@@ -39,19 +43,21 @@ struct RideRequestView: View {
                         
                         Spacer()
                         
-                        Text("1:30 PM")
+                        Text(locationViewModel.pickupTime ?? "")
                             .font(.system(size: 14,weight: .semibold))
                             .foregroundColor(.gray)
                     }
                     .padding(.bottom,10)
                     
                     HStack{
-                        Text("Starbucks Coffee")
-                            .font(.system(size: 16,weight: .semibold))
+                        if let location = locationViewModel.selectedUberLocation{
+                            Text(location.title)
+                                .font(.system(size: 16,weight: .semibold))
+                        }
                         
                         Spacer()
                         
-                        Text("1:45 PM")
+                        Text(locationViewModel.dropOffTime ?? "")
                             .font(.system(size: 14,weight: .semibold))
                             .foregroundColor(.gray)
                     }
@@ -73,22 +79,29 @@ struct RideRequestView: View {
             
             ScrollView(.horizontal){
                 HStack(spacing:12){
-                    ForEach(0 ..< 3 , id: \.self){ _ in
+                    ForEach(RideType.allCases){ridetype in
                         VStack(alignment : .leading){
-                            Image("uber-x")
+                            Image(ridetype.imageName)
                                 .resizable()
                                 .scaledToFit()
-                            VStack(spacing:4){
-                                Text("UberX")
+                            VStack(alignment:.leading,spacing:4){
+                                Text(ridetype.description)
                                     .font(.system(size: 14,weight: .semibold))
-                                Text("$22.05")
+                                Text("$\(locationViewModel.computeRiderPrice(forType: ridetype),specifier: "%.2f")")
                                     .font(.system(size: 14,weight: .semibold))
                             }
-                            .padding(8)
+                            .padding()
                         }
                         .frame(width:112, height: 140)
-                        .background(Color(.systemGroupedBackground))
+                        .background(Color(selectedRideType == ridetype ? .systemBlue : Color.theme.secondaryBackgroundColor))
+                        .foregroundColor(selectedRideType == ridetype ? .white : Color.theme.primaryTextColor)
+                        .scaleEffect(selectedRideType == ridetype ? 1.2 : 1.0)
                         .cornerRadius(10)
+                        .onTapGesture {
+                            withAnimation(.spring()){
+                                selectedRideType = ridetype
+                            }
+                        }
                     }
                 }
             }
@@ -115,7 +128,7 @@ struct RideRequestView: View {
         }
         .padding(.bottom,24)
         .cornerRadius(16)
-        .background(.white)
+        .background(Color.theme.backgroundColor)
     }
 }
 
